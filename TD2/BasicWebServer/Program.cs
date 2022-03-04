@@ -81,49 +81,48 @@ namespace BasicServerHTTPlistener
                 Console.WriteLine(request.Url.Query);
 
                 /***My methods***/
-
-                Type type = typeof(Mymethods);
-                string methodeName = request.Url.Segments[2];
-                MethodInfo method = type.GetMethod(methodeName);
-                Mymethods c = new Mymethods();
-                Console.WriteLine(methodeName);
-                string param1 = HttpUtility.ParseQueryString(request.Url.Query).Get("param1");
-                string param2 = HttpUtility.ParseQueryString(request.Url.Query).Get("param2");
-                Object[] paramts = {};
-                if (methodeName.Equals("incr"))
-                {
-                    int val = int.Parse(param1);
-                    Object[] paramaters = {val};
-                    paramts = paramaters;
-                }
-                else
-                {
-                    Object[] paramaters = { param1, param2 };
-                    paramts = paramaters;
-                }
+                if (!request.Url.Equals("http://localhost:8080/favicon.ico")) { 
+                    Type type = typeof(Mymethods);
+                    string methodeName = request.Url.Segments[2];
+                    MethodInfo method = type.GetMethod(methodeName);
+                    Mymethods c = new Mymethods();
+                    Console.WriteLine(methodeName);
+                    string param1 = HttpUtility.ParseQueryString(request.Url.Query).Get("param1");
+                    string param2 = HttpUtility.ParseQueryString(request.Url.Query).Get("param2");
+                    Object[] paramts = {};
+                    if (methodeName.Equals("incr"))
+                    {
+                        int val = int.Parse(param1);
+                        Object[] paramaters = {val};
+                        paramts = paramaters;
+                    }
+                    else
+                    {
+                        Object[] paramaters = { param1, param2 };
+                        paramts = paramaters;
+                    }
  
-                string result = (string)method.Invoke(c, paramts);
-                Console.WriteLine(result);
-                Console.ReadLine();
+                    string result = (string)method.Invoke(c, paramts);
+                    Console.WriteLine(result);
 
-                Console.WriteLine(result);
+                    /***END**/
 
-                /***END**/
 
-               
 
-                // Obtain a response object.
-                //HttpListenerResponse response = context.Response;
+                    // Obtain a response object.
+                    HttpListenerResponse response = context.Response;
 
-                //// Construct a response.
-                //string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-                //byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                //// Get a response stream and write the response to it.
-                //response.ContentLength64 = buffer.Length;
-                //System.IO.Stream output = response.OutputStream;
-                //output.Write(buffer, 0, buffer.Length);
-                //// You must close the output stream.
-                //output.Close();
+                    // Construct a response.
+                    string responseString = result;
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                    // Get a response stream and write the response to it.
+                    response.ContentLength64 = buffer.Length;
+                    System.IO.Stream output = response.OutputStream;
+                    output.Write(buffer, 0, buffer.Length);
+                    // You must close the output stream.
+                    output.Close();
+                
+                }
             }
             // Httplistener neither stop ... But Ctrl-C do that ...
             // listener.Stop();
@@ -133,10 +132,11 @@ namespace BasicServerHTTPlistener
 
 class Mymethods
 {
+    /* http://localhost:8080/ceque/MyMethod?param1=3&param2=tes*/
     public static string MyMethod(string param1, string param2)
     {
         Console.WriteLine("Call MyMethod 1");
-        return "<html><body> Hello " + param1 + " et " + param2 + "</body></html>";
+        return "<html><body> Vous avez entré " + param1 + " et " + param2 + "</body></html>";
     }
 
     public static string MyMethod2(string param1, string param2)
@@ -148,7 +148,7 @@ class Mymethods
     public static string MyMethod3(string param1, string param2)
     {
         ProcessStartInfo start = new ProcessStartInfo();
-        start.FileName = @"C:\S8\SOC\eiin839\TD2\ExecTest\bin\Debug\ExecTest.exe"; // Specify exe name.
+        start.FileName = @"..\..\ExecTest\bin\Debug\ExecTest.exe"; // Specify exe name.
         start.Arguments = param1;// Specify arguments.
         start.UseShellExecute = false;
         start.RedirectStandardOutput = true;
