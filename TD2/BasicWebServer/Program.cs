@@ -6,6 +6,7 @@ using System.Text;
 using System.Web;
 using System.Reflection;
 using System.Diagnostics;
+using System.Web.Script.Serialization;
 
 namespace BasicServerHTTPlistener
 {
@@ -103,7 +104,21 @@ namespace BasicServerHTTPlistener
                     }
  
                     string result = (string)method.Invoke(c, paramts);
+
                     Console.WriteLine(result);
+
+                    Console.WriteLine("**********Traitement de donnée***********");
+
+                    if (methodeName.Equals("incr"))
+                    {
+
+                        var jss = new JavaScriptSerializer();
+
+                        // More short with dynamic
+                        dynamic d = jss.DeserializeObject(result);
+                        Console.WriteLine(d["param_incr"]);
+
+                    }
 
                     /***END**/
 
@@ -168,7 +183,30 @@ class Mymethods
         return "";
     }
 
-   /** http://localhost:8080/ceque/incr?param1=3 **/
+    public static string MyMethodExternalCall(string param1, string param2)
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.Arguments = "java";
+        startInfo.FileName = @"C:\S8\SOC\TD\eiin839\TD2\Test";
+        startInfo.UseShellExecute = false;
+        startInfo.RedirectStandardOutput = true;
+
+        using (Process process = Process.Start(startInfo))
+        {
+            //
+            // Read in all the text from the process with the StreamReader.
+            //
+            using (StreamReader reader = process.StandardOutput)
+            {
+                string result = reader.ReadToEnd();
+                Console.WriteLine(result);
+                Console.ReadLine();
+            }
+        }
+        return "";
+    }
+
+    /** http://localhost:8080/ceque/incr?param1=3 **/
     public static string incr(int param1_val)
     {
         string result = "{\n \t param : " + param1_val + ",\n\t param_incr : " + (param1_val + 1) +"\n}";
