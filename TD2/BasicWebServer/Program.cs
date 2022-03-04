@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace BasicServerHTTPlistener
 {
@@ -75,51 +77,102 @@ namespace BasicServerHTTPlistener
                 // get url 
                 Console.WriteLine($"Received request for {request.Url}");
 
-                //get url protocol
-                Console.WriteLine(request.Url.Scheme);
-                //get user in url
-                Console.WriteLine(request.Url.UserInfo);
-                //get host in url
-                Console.WriteLine(request.Url.Host);
-                //get port in url
-                Console.WriteLine(request.Url.Port);
-                //get path in url 
-                Console.WriteLine(request.Url.LocalPath);
-
-                // parse path in url 
-                foreach (string str in request.Url.Segments)
-                {
-                    Console.WriteLine(str);
-                }
-
-                //get params un url. After ? and between &
 
                 Console.WriteLine(request.Url.Query);
 
-                //parse params in url
-                Console.WriteLine("param1 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param1"));
-                Console.WriteLine("param2 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param2"));
-                Console.WriteLine("param3 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param3"));
-                Console.WriteLine("param4 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param4"));
+                /***My methods***/
 
-                //
-                Console.WriteLine(documentContents);
+                Type type = typeof(Mymethods);
+                string methodeName = request.Url.Segments[2];
+                MethodInfo method = type.GetMethod(methodeName);
+                Mymethods c = new Mymethods();
+                Console.WriteLine(methodeName);
+                string param1 = HttpUtility.ParseQueryString(request.Url.Query).Get("param1");
+                string param2 = HttpUtility.ParseQueryString(request.Url.Query).Get("param2");
+                Object[] paramts = {};
+                if (methodeName.Equals("incr"))
+                {
+                    int val = int.Parse(param1);
+                    Object[] paramaters = {val};
+                    paramts = paramaters;
+                }
+                else
+                {
+                    Object[] paramaters = { param1, param2 };
+                    paramts = paramaters;
+                }
+ 
+                string result = (string)method.Invoke(c, paramts);
+                Console.WriteLine(result);
+                Console.ReadLine();
+
+                Console.WriteLine(result);
+
+                /***END**/
+
+               
 
                 // Obtain a response object.
-                HttpListenerResponse response = context.Response;
+                //HttpListenerResponse response = context.Response;
 
-                // Construct a response.
-                string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                System.IO.Stream output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                // You must close the output stream.
-                output.Close();
+                //// Construct a response.
+                //string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+                //byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                //// Get a response stream and write the response to it.
+                //response.ContentLength64 = buffer.Length;
+                //System.IO.Stream output = response.OutputStream;
+                //output.Write(buffer, 0, buffer.Length);
+                //// You must close the output stream.
+                //output.Close();
             }
             // Httplistener neither stop ... But Ctrl-C do that ...
             // listener.Stop();
         }
+    }
+}
+
+class Mymethods
+{
+    public static string MyMethod(string param1, string param2)
+    {
+        Console.WriteLine("Call MyMethod 1");
+        return "<html><body> Hello " + param1 + " et " + param2 + "</body></html>";
+    }
+
+    public static string MyMethod2(string param1, string param2)
+    {
+        Console.WriteLine("Call MyMethod 2");
+        return "<html><body> Hello " + param1 + " et " + param2 + "=> MyMethod2</body></html>";
+    }
+
+    public static string MyMethod3(string param1, string param2)
+    {
+        ProcessStartInfo start = new ProcessStartInfo();
+        start.FileName = @"C:\S8\SOC\eiin839\TD2\ExecTest\bin\Debug\ExecTest.exe"; // Specify exe name.
+        start.Arguments = param1;// Specify arguments.
+        start.UseShellExecute = false;
+        start.RedirectStandardOutput = true;
+
+        using (Process process = Process.Start(start))
+        {
+            //
+            // Read in all the text from the process with the StreamReader.
+            //
+            using (StreamReader reader = process.StandardOutput)
+            {
+                string result = reader.ReadToEnd();
+                Console.WriteLine(result);
+                Console.ReadLine();
+            }
+        }
+        return "";
+    }
+
+   /** http://localhost:8080/ceque/incr?param1=3 **/
+    public static string incr(int param1_val)
+    {
+        string result = "{\n \t param : " + param1_val + ",\n\t param_incr : " + (param1_val + 1) +"\n}";
+
+        return result;
     }
 }
